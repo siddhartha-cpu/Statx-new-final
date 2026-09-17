@@ -1,4 +1,5 @@
 import os
+import re
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -126,16 +127,52 @@ async def save_exam_result(document_id: str, payload: ExamResultRequest, request
     if payload.correct > payload.total:
         raise HTTPException(status_code=422, detail="Correct answers cannot exceed total questions")
     now = datetime.now(timezone.utc)
-    result = {"id": str(uuid.uuid4()), "user_id": user_id, "document_id": document_id, "document_title": document["title"], "analysis_id": payload.analysis_id, "kind": "mcqs", "correct": payload.correct, "total": payload.total, "percentage": round(payload.correct / payload.total * 100), "submitted_at": now}
-    await db.exam_results.insert_one(result)
-    return ExamResult(**{key: result[key] for key in ("id", "document_id", "document_title", "analysis_id", "kind", "correct", "total", "percentage", "submitted_at")})
+    percentage = round(payload.correct / payload.total * 100)
+    feedback = "Strong result. Revisit the explanations for any missed questions and try a new set to reinforce recall." if percentage >= 70 else "Keep practicing. Review the document sections behind the missed questions, then retry with fresh MCQs."
+    result = {"id": str(uuid.uuid4()), "user_id": user_id, "document_id": document_id, "document_title": document["title"], "analysis_id": payload.analysis_id, "kind": "mcqs", "correct": payload.correct, "total": payload.total, "percentage": percentage, "submitted_at": now, "feedback": feedback}
+    await db.exam_results.update_one({"user_id": user_id, "analysis_id": payload.analysis_id}, {"$set": result}, upsert=True)
+    return ExamResult(**{key: result.get(key) for key in ("id", "document_id", "document_title", "analysis_id", "kind", "correct", "total", "percentage", "submitted_at", "feedback")})
+
+
+@router.post("/assignments/{analysis_id}/submit", response_model=ExamResult)
+async def submit_assignment(analysis_id: str, request: Request, file: UploadFile = File(...)):
+    user_id = user_id_from_request(request)
+    if file.content_type != "application/pdf":
+        raise HTTPException(status_code=415, detail="Submit the completed assignment as a PDF")
+    assignment = await db.document_analyses.find_one({"id": analysis_id, "user_id": user_id, "action": "assignment"})
+    if not assignment:
+        raise HTTPException(status_code=404, detail="Assignment not found")
+    document = await db.module_items.find_one({"id": assignment["document_id"], "user_id": user_id})
+    submission_id = str(uuid.uuid4())
+    folder = UPLOAD_DIR / user_id / "submissions"
+    folder.mkdir(parents=True, exist_ok=True)
+    path = folder / submission_id
+    with path.open("wb") as target:
+        while chunk := await file.read(1024 * 1024):
+            target.write(chunk)
+    answer_text = await run_in_threadpool(_extract_text, path, "application/pdf")
+    if not answer_text:
+        raise HTTPException(status_code=422, detail="No readable answers were found in the submitted PDF")
+    grading_prompt = f"Grade this completed assignment against the assignment and marking guide. Return exactly: Score: N/100, then Feedback: concise strengths, then How to improve: specific next steps. Be fair and evidence-based.\n\nASSIGNMENT:\n{assignment['content']}\n\nSTUDENT SUBMISSION:\n{answer_text}"
+    try:
+        result, _ = await route_with_fallback(user_id, [{"role": "user", "content": grading_prompt}], [], f"assignment-grade:{analysis_id}:{submission_id}")
+    except ProviderError as exc:
+        raise HTTPException(status_code=503, detail={"code": "ai_unavailable", "message": exc.message}) from exc
+    score_match = re.search(r"Score\s*:\s*(\d{1,3})\s*/\s*100", result.text, re.IGNORECASE)
+    if not score_match:
+        raise HTTPException(status_code=502, detail="StatNex AI could not produce a valid assignment score")
+    score = max(0, min(100, int(score_match.group(1))))
+    now = datetime.now(timezone.utc)
+    exam_result = {"id": str(uuid.uuid4()), "user_id": user_id, "document_id": assignment["document_id"], "document_title": (document or {}).get("title", "Assignment"), "analysis_id": analysis_id, "kind": "assignment", "correct": score, "total": 100, "percentage": score, "submitted_at": now, "feedback": result.text, "submission_path": str(path)}
+    await db.exam_results.insert_one(exam_result)
+    return ExamResult(**{key: exam_result.get(key) for key in ("id", "document_id", "document_title", "analysis_id", "kind", "correct", "total", "percentage", "submitted_at", "feedback")})
 
 
 @router.get("/results/exams", response_model=list[ExamResult])
 async def list_exam_results(request: Request):
     user_id = user_id_from_request(request)
     docs = await db.exam_results.find({"user_id": user_id}).sort("submitted_at", -1).to_list(100)
-    return [ExamResult(**{key: row[key] for key in ("id", "document_id", "document_title", "analysis_id", "kind", "correct", "total", "percentage", "submitted_at")}) for row in docs]
+    return [ExamResult(**{key: row.get(key) for key in ("id", "document_id", "document_title", "analysis_id", "kind", "correct", "total", "percentage", "submitted_at", "feedback")}) for row in docs]
 
 
 @router.post("/{kind}", response_model=ModuleItem)

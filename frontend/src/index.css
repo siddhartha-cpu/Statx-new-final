@@ -148,3 +148,9 @@ html.dark, html.dark body { background: #080d1a; color: #f8fafc; color-scheme: d
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
 }
+
+@media print {
+  body * { visibility: hidden !important; }
+  .assignment-print-area, .assignment-print-area * { visibility: visible !important; }
+  .assignment-print-area { position: absolute; inset: 0; width: 100%; padding: 2rem; background: white; color: #0f172a; }
+}

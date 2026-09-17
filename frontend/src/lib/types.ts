@@ -4,6 +4,8 @@ export interface UserPublic {
   display_name: string;
   created_at: string;
   setup_complete: boolean;
+  avatar_url?: string | null;
+  banner_url?: string | null;
 }
 
 export interface ProviderStatus {
@@ -93,4 +95,5 @@ export interface ExamResult {
   total: number;
   percentage: number;
   submitted_at: string;
+  feedback?: string | null;
 }

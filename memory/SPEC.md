@@ -25,6 +25,8 @@ There is one user role in this MVP. Registration/login issues a signed, httpOnly
 6. `/app/documents` accepts multiple PDF, DOCX, Markdown, CSV, and text files in one selection with no application-level size cap. Files use the persistent `statx-uploads` Docker volume.
 7. A selected document opens the video-inspired three-column intelligence workspace: document list, AI action/result area, and persistent grounded document Q&A.
 8. Flashcards render as animated click-to-flip decks. MCQs render as clickable options with immediate correctness, the right answer, a document-grounded explanation, and a save-to-Results action.
-9. History replaces Competency and owns the clickable uploaded-document timeline plus every saved AI action. Results shows saved MCQ scores. Assignments lists uploaded PDFs and generates homework at 2-, 5-, or 10-mark difficulty.
-10. The overview summarizes chat history, uploaded documents, History, and exam Results. The header shows the account display name, not its email address.
-11. Light and dark modes are available on login and authenticated screens, stored under `statnex-theme`; Settings provides visual Light, Dark, and Automatic theme cards without technical backend copy.
+9. History replaces Competency and owns the clickable uploaded-document timeline plus every saved AI action. Results shows automatically saved MCQ scores and AI-graded assignment submissions with improvement feedback.
+10. Assignments lists uploaded PDFs, generates homework at 2-, 5-, or 10-mark difficulty, supports print/save-as-PDF, accepts a completed PDF, and grades it through the server AI route.
+11. The overview summarizes chat history, uploaded documents, History, and exam Results. The header shows the account display name, not its email address.
+12. Light and dark modes are available on login and authenticated screens, stored under `statnex-theme`; Settings provides visual Light, Dark, and Automatic theme cards without technical backend copy.
+13. Settings accepts JPG, PNG, or WebP profile and banner images. Files persist under `UPLOAD_DIR`, image endpoints require the account session, and the profile photo appears in the global header.

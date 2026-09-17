@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, RotateCcw, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { DocumentAnalysis } from "@/lib/types";
@@ -74,10 +74,12 @@ function parseMcqs(content: string): ParsedMcq[] {
 function McqDeck({ content, onComplete }: { content: string; onComplete?: (correct: number, total: number) => void }) {
   const questions = useMemo(() => parseMcqs(content), [content]);
   const [selected, setSelected] = useState<Record<number, string>>({});
-  useEffect(() => setSelected({}), [content]);
-  if (!questions.length) return <RichText content={content} action="mcqs" />;
+  const autoSaved = useRef(false);
+  useEffect(() => { setSelected({}); autoSaved.current = false; }, [content]);
   const answered = Object.keys(selected).length;
   const score = questions.reduce((total, question, index) => total + (selected[index] === question.correct ? 1 : 0), 0);
+  useEffect(() => { if (questions.length && answered === questions.length && onComplete && !autoSaved.current) { autoSaved.current = true; onComplete(score, questions.length); } }, [answered, onComplete, questions.length, score]);
+  if (!questions.length) return <RichText content={content} action="mcqs" />;
   return <div className="space-y-5" data-testid="mcq-deck"><div className="flex items-center justify-between"><p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-600">Interactive practice</p><span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700">{answered}/{questions.length} answered</span></div>{questions.map((question, index) => { const answer = selected[index]; const correct = answer === question.correct; return <div key={`${question.question}-${index}`} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm" data-testid={`mcq-question-${index}`}><div className="flex gap-3"><span className="grid size-8 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 text-xs font-bold text-white">{index + 1}</span><p className="font-heading text-base font-semibold leading-6 text-slate-800">{question.question}</p></div><div className="mt-4 grid gap-2 sm:grid-cols-2">{question.options.map((option) => { const isChosen = answer === option.key; const isCorrectOption = Boolean(answer) && option.key === question.correct; const classes = isCorrectOption ? "border-emerald-300 bg-emerald-50 text-emerald-800" : isChosen ? "border-red-300 bg-red-50 text-red-700" : "border-slate-200 bg-slate-50 text-slate-600 hover:border-amber-300 hover:bg-amber-50"; return <button key={option.key} data-testid={`mcq-option-${index}-${option.key}`} onClick={() => setSelected((values) => ({ ...values, [index]: option.key }))} className={`flex items-start gap-3 rounded-xl border p-3 text-left text-sm ${classes}`}><span className="font-bold">{option.key}</span><span>{option.text}</span></button>; })}</div>{answer && <div className={`analysis-enter mt-4 rounded-xl border p-4 ${correct ? "border-emerald-200 bg-emerald-50" : "border-amber-200 bg-amber-50"}`} data-testid={`mcq-feedback-${index}`}><p className={`text-sm font-semibold ${correct ? "text-emerald-700" : "text-amber-800"}`}>{correct ? "Correct" : `Not quite — the correct answer is ${question.correct}`}</p><p className="mt-1 text-xs leading-5 text-slate-600"><span className="font-semibold">Why:</span> {question.why || "This option best matches the information in the document."}</p></div>}</div>; })}{answered === questions.length && onComplete && <div className="rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 p-5 text-white"><p className="font-heading text-xl font-semibold">You scored {score} out of {questions.length}</p><p className="mt-1 text-sm text-amber-50">Save this attempt to your Results history.</p><Button data-testid="mcq-save-result-button" onClick={() => onComplete(score, questions.length)} className="mt-4 bg-white text-amber-700 hover:bg-amber-50">Save result</Button></div>}</div>;
 }
 

@@ -9,6 +9,8 @@ class UserPublic(BaseModel):
     display_name: str
     created_at: datetime
     setup_complete: bool = False
+    avatar_url: str | None = None
+    banner_url: str | None = None
 
 
 class RegisterRequest(BaseModel):

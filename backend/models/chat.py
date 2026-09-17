@@ -121,3 +121,4 @@ class ExamResult(BaseModel):
     total: int
     percentage: int
     submitted_at: datetime
+    feedback: str | None = None

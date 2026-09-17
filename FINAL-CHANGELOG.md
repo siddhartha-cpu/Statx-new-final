@@ -14,5 +14,9 @@
 - Added persistent light/dark modes across login and authenticated screens with a colorful blue, cyan, emerald, amber, and indigo palette.
 - Replaced Competency with clickable document History, connected saved MCQ attempts to Results, and added PDF-based Assignments with selectable 2-, 5-, or 10-mark questions.
 - Rebuilt Settings around profile and visual theme choices, and corrected dark-mode gradient contrast across Results and stat cards.
+- Added persistent profile-photo and banner uploads in Settings, including immediate avatar updates in the global header.
+- Made long flashcard answers fully scrollable and upgraded History so any saved output reopens as an interactive reusable view.
+- Added assignment print/save-as-PDF, completed-PDF submission, AI grading, persisted scores, and improvement feedback in Results.
+- Connected completed MCQs to Results automatically while retaining clear per-option explanations in the document workspace.
 - Added Dockerfiles, Nginx SPA/API proxy, Docker Compose with persistent Mongo volume and health checks, environment templates, and deployment documentation.
 - Removed platform-only Vite deployment plugins and backend integration dependency from the deployable application.
