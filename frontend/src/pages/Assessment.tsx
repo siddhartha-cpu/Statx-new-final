@@ -1,0 +1,2 @@
+import ModulePage from "@/pages/ModulePage";
+export default function Assessment() { return <ModulePage kind="assessment" title="Assessment" eyebrow="Structured review" description="Turn an open question into a structured review with clear next actions." />; }

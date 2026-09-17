@@ -1,0 +1,94 @@
+{
+  "theme": "Dark Mode Default (Statx AI Tech Aesthetic)",
+  "typography": {
+    "fontFamilies": {
+      "heading": "Chivo, sans-serif",
+      "body": "IBM Plex Sans, sans-serif",
+      "mono": "JetBrains Mono, monospace"
+    },
+    "rules": {
+      "headings": "Use tight letter spacing (tracking-tight) for all headings above 32px. Use font-light or font-black to create tension.",
+      "body": "Use leading-relaxed for chat messages and long text.",
+      "hierarchy": "H1: text-4xl to text-5xl max. H2: text-2xl to text-3xl. Gap between H1 and subtitle should not exceed 2 steps."
+    }
+  },
+  "colors": {
+    "archetype": "ARCHETYPE 4: SWISS & HIGH-CONTRAST (Dark Mode)",
+    "palette": {
+      "background": "#0A0A0A",
+      "surface": "#121212",
+      "primary": "#0055FF",
+      "primary_hover": "#0044CC",
+      "text_main": "#FFFFFF",
+      "text_muted": "#A1A1AA",
+      "border": "rgba(255, 255, 255, 0.1)",
+      "accent_red": "#FF3B30",
+      "accent_green": "#34C759",
+      "accent_yellow": "#FFCC00"
+    },
+    "rules": "Never use pure transparent backgrounds if content scrolls under. Avoid #808080. Tint grays slightly blue. Only use primary color for CTAs."
+  },
+  "visual_enhancers": {
+    "surfaces": "Use 'GRID BORDERS' for Dashboard panels (border-collapse, border-r, border-b). Use 'Crystal Glass' for sticky headers (backdrop-blur-xl bg-black/60 + 1px bottom border).",
+    "shadows": "Minimal shadows. Ground elements with sharp 1px borders (border-white/10).",
+    "corners": "Subtle roundness (max 8px / rounded-lg)."
+  },
+  "components": {
+    "general": "Prioritize Shadcn components. Avoid pure HTML interactive elements (no <select>).",
+    "cards": "Flat background, 1px subtle border, no shadow by default. Hover: slight lift (-translate-y-1), subtle shadow, border brightens.",
+    "buttons": "Sharp or slightly rounded (rounded-md). Explicit text colors on hover.",
+    "chat_interface": "User bubble: bg-primary text-white. AI bubble: bg-surface border border-white/10. Include markdown support.",
+    "controls": "Use ToggleGroup or Tabs for Auto/Web/AI-only controls. Segmented, clearly labeled."
+  },
+  "layouts": {
+    "dashboard": "High Density Grid (MODE B). grid-cols-1 md:grid-cols-3 lg:grid-cols-4. gap-4 or gap-6. Every pixel utilized. h-full on children.",
+    "chat_workspace": "Bento style. Center chat column (max-w-3xl) + side panels for Provider Settings, Citations, Web Search results.",
+    "spacing": "Generous. p-6 or p-8 inside cards. 2-3x more spacing than default.",
+    "provider_dashboard": "Use status cards for OpenAI/Anthropic/Groq/Gemini with health/cooldown visual indicators (green/yellow/red dots)."
+  },
+  "motion": {
+    "rules": "Minimalist micro-interactions. Hover states on all interactive elements. MUST respect prefers-reduced-motion."
+  },
+  "accessibility": {
+    "rules": "Minimum 4.5:1 contrast for normal text. ALWAYS explicitly set text color on hover. data-testid attributes are MANDATORY on all interactive and key informational elements."
+  },
+  "media": {
+    "image_urls": {
+      "user_avatar": {
+        "url": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTJ8MHwxfHNlYXJjaHwzfHxwcm9mZXNzaW9uYWwlMjBoZWFkc2hvdCUyMGF2YXRhcnxlbnwwfHx8fDE3ODk2Mjg0MzV8MA&ixlib=rb-4.1.0&q=85",
+        "description": "man wearing Henley top portrait",
+        "category": "avatars"
+      },
+      "admin_avatar": {
+        "url": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTJ8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBoZWFkc2hvdCUyMGF2YXRhcnxlbnwwfHx8fDE3ODk2Mjg0MzV8MA&ixlib=rb-4.1.0&q=85",
+        "description": "man in black button-up shirt",
+        "category": "avatars"
+      },
+      "auth_background": {
+        "url": "https://images.unsplash.com/photo-1644088379091-d574269d422f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NDh8MHwxfHNlYXJjaHwxfHxhYnN0cmFjdCUyMG5ldHdvcmslMjBsaW5lcyUyMGRhcmt8ZW58MHx8fHwxNzg5NjI4NDM5fDA&ixlib=rb-4.1.0&q=85",
+        "description": "a blue background with lines and dots",
+        "category": "backgrounds"
+      }
+    }
+  },
+  "instructions_to_main_agent": [
+    "CRITICAL: Write standard Javascript (.js / .jsx) instead of Typescript (.tsx). The project uses Vite + JS.",
+    "Build the unified Statx experience in the provided workspace. Preserve all existing functionality from the problem statement.",
+    "Required pages/views: Login, Dashboard, AI Workspace, Provider Dashboard, Conversations, Documents, Competency, Results, Assessment, Settings.",
+    "Integrate Shadcn components into the JS setup. Do not use standard HTML forms/inputs for advanced interactions.",
+    "Implement real web search provider UI integration (configurable provider with normalized sources/citations).",
+    "Design UI for Auto/Web/AI-only controls using segmented controls (e.g., Shadcn Tabs or ToggleGroup).",
+    "Design a Provider Dashboard that visually tracks cooldown/health for OpenAI, Anthropic, Groq, and Gemini.",
+    "Ensure the UI reflects a premium, high-end 'Statx AI' brand identity following the Swiss High-Contrast Dark Theme.",
+    "Use Lucide icons (lucide-react is standard for Shadcn) for a clean, technical look."
+  ],
+  "universal_guidelines_for_main_agent": [
+    "You MUST NOT apply universal transition (e.g., transition: all). Add transitions for specific properties.",
+    "You MUST NOT center align the app container. No .App { text-align: center; }.",
+    "Use sonner for toasts.",
+    "Never use placeholder URLs (via.placeholder.com). Use the provided image_urls.",
+    "Ensure 2-3x more spacing than typical designs. Use p-6 or p-8 inside cards.",
+    "All interactive and key informational elements MUST include a data-testid attribute.",
+    "Avoid the 'AI slop' aesthetic. Create crisp, layered, professional UIs without generic uniform styling."
+  ]
+}

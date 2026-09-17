@@ -1,0 +1,24 @@
+{
+  "iteration": 1,
+  "passed": 8,
+  "failed": 0,
+  "bugs": [],
+  "action_items": [
+    "Real provider credentials, Gemini OAuth, and live search remain unavailable by environment design; MOCK Statx Demo was used for chat verification.",
+    "Three browser checks required selector/assertion refinement and passed on rerun; classify as flaky per test protocol."
+  ],
+  "retest_needed": true,
+  "checks": [
+    {"criterion":"User can register or log in and reach the Statx dashboard","name":"auth-dashboard-registration","lane":"browser","status":"passed","evidence":"Registration UI submitted a fresh tscheck account; redirected to /app; dashboard heading 'Good to see you.' and Connected AI stat visible."},
+    {"criterion":"Requested Statx routes remain reachable","name":"statx-routes-sidebar-render","lane":"browser","status":"flaky","evidence":"After selector refinement, sidebar navigation rendered /workspace, /conversations, /providers, /documents, /competency, /results, /assessment, and /settings with non-empty main content."},
+    {"criterion":"Provider dashboard separates selection from authorization","name":"provider-selection-authorization-boundary","lane":"browser","status":"flaky","evidence":"Provider cards/status dots rendered; OpenAI selection changed to 'In routing'; Gemini remained 'Not connected' after connect attempt. Missing OAuth produced expected HTTP 503 console response, with no false connected state."},
+    {"criterion":"Core chat journey persists context","name":"chat-thread-persists-provider-context","lane":"browser","status":"flaky","evidence":"Fresh thread accepted prompt, rendered user and assistant messages with provider label 'demo', and retained prompt after reload."},
+    {"criterion":"Search controls are visible and honest","name":"workspace-search-mode-honesty","lane":"browser","status":"passed","evidence":"Auto, Web, and AI only controls visible; Web selection showed 'Live web search' context and live-sources composer placeholder without claiming retrieved sources."},
+    {"criterion":"Protected access and logout behave safely","name":"protected-access-logout-boundary","lane":"browser","status":"passed","evidence":"Sign out returned to /login; direct /app navigation while unauthenticated redirected to /login and dashboard was absent. API requests returned expected 401s in console."},
+    {"criterion":"Auth API supports registration, session identity, logout, and login","name":"test_tscheck_auth","lane":"backend","status":"passed","evidence":"HTTP assertions: POST /api/auth/register 200; GET /api/auth/me 200; POST /api/auth/logout then /me 401; POST /api/auth/login 200."},
+    {"criterion":"Provider API separates selection from authorization","name":"test_tscheck_providers","lane":"backend","status":"passed","evidence":"HTTP assertions: GET /api/providers 200; PATCH /api/providers/preferences 200; GET /api/providers/gemini/connect 503 with 'not configured'."},
+    {"criterion":"Chat API persists context and provider attribution","name":"test_tscheck_chat","lane":"backend","status":"passed","evidence":"HTTP assertions: POST /api/conversations 200; POST /api/conversations/{id}/messages 200 with provider_id demo; GET detail 200 containing user and assistant rows."},
+    {"criterion":"Protected API data rejects unauthenticated access","name":"test_tscheck_protected","lane":"backend","status":"passed","evidence":"HTTP assertions: unauthenticated GET /api/conversations 401 and /api/providers 401; after logout GET /api/auth/me 401."},
+    {"criterion":"Search API does not claim Web success without credential","name":"test_tscheck_search","lane":"backend","status":"passed","evidence":"HTTP assertion: POST /api/conversations/{id}/messages with search_mode web returned 503 containing search_unavailable."}
+  ]
+}

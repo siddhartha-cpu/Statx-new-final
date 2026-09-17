@@ -1,0 +1,89 @@
+{
+  "iteration": 2,
+  "passed": 11,
+  "failed": 0,
+  "bugs": [],
+  "action_items": [
+    "Real provider credentials, Gemini OAuth, and live search remain unavailable by environment design; MOCK Statx Demo was used for chat verification."
+  ],
+  "retest_needed": false,
+  "checks": [
+    {
+      "criterion": "User can register or log in and reach the Statx dashboard",
+      "name": "auth-dashboard-registration",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Fresh registration submitted; redirected to /app; dashboard heading 'Good to see you.' and Connected AI stat were visible."
+    },
+    {
+      "criterion": "Requested Statx routes remain reachable",
+      "name": "statx-routes-sidebar-render",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Sidebar navigation reached /workspace, /conversations, /providers, /documents, /competency, /results, /assessment, and /settings; main content was non-empty on each route."
+    },
+    {
+      "criterion": "Provider dashboard separates selection from authorization",
+      "name": "provider-selection-authorization-boundary",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Provider cards and status dots rendered; OpenAI selection showed 'In routing'; Gemini remained 'Not connected' after connect attempt. Expected 503 for missing OAuth was observed and no false connected state appeared."
+    },
+    {
+      "criterion": "Core chat journey persists context",
+      "name": "chat-thread-persists-provider-context",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Fresh thread accepted a prompt, displayed the prompt and demo provider attribution, changed the conversation title, and retained the prompt after reload."
+    },
+    {
+      "criterion": "Search controls are visible and honest",
+      "name": "workspace-search-mode-honesty",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Auto, Web, and AI only controls were visible; Web mode showed 'Live web search' context and live-sources placeholder without claiming retrieved sources."
+    },
+    {
+      "criterion": "Protected access and logout behave safely",
+      "name": "protected-access-logout-boundary",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Sign out returned to /login; direct /app navigation while unauthenticated redirected to /login and dashboard was absent. Expected 401 responses were observed."
+    },
+    {
+      "criterion": "Auth API supports registration, session identity, logout, and login",
+      "name": "test_tscheck_auth",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "pytest HTTP assertions passed: POST /api/auth/register 200; GET /api/auth/me 200; logout then /me 401; POST /api/auth/login 200."
+    },
+    {
+      "criterion": "Provider API separates selection from authorization",
+      "name": "test_tscheck_providers",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "pytest HTTP assertions passed: GET /api/providers 200; PATCH /api/providers/preferences 200; Gemini connect returned expected 503 with not-configured response."
+    },
+    {
+      "criterion": "Chat API persists context and provider attribution",
+      "name": "test_tscheck_chat",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "pytest HTTP assertions passed: conversation creation 200; message creation 200 with provider_id demo; conversation detail 200 containing user and assistant rows."
+    },
+    {
+      "criterion": "Protected API data rejects unauthenticated access",
+      "name": "test_tscheck_protected",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "pytest HTTP assertions passed: unauthenticated GET /api/conversations 401, GET /api/providers 401, and GET /api/auth/me after logout 401."
+    },
+    {
+      "criterion": "Search API does not claim Web success without credential",
+      "name": "test_tscheck_search",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "pytest HTTP assertion passed: Web-mode message request returned expected 503 containing search_unavailable."
+    }
+  ]
+}
