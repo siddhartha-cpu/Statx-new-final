@@ -9,7 +9,7 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import RedirectResponse
 
 from lib.db import db
-from lib.providers import PROVIDERS, provider_statuses
+from lib.providers import OPTIONAL_PROVIDERS, provider_statuses
 from lib.security import encrypt_token, user_id_from_request
 from models import ProviderPreferences, ProviderStatus, SetupRequest
 
@@ -49,7 +49,7 @@ async def finish_setup(payload: SetupRequest, request: Request):
 async def connect_provider(provider_id: str, request: Request):
     user_id = user_id_from_request(request)
     if provider_id != "gemini":
-        if provider_id not in PROVIDERS:
+        if provider_id not in OPTIONAL_PROVIDERS:
             raise HTTPException(status_code=404, detail="Unknown provider")
         return {"provider_id": provider_id, "authorization_url": None, "message": "This provider uses a server-side API credential configured by the administrator."}
     client_id = os.environ.get("GOOGLE_CLIENT_ID")

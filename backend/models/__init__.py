@@ -7,6 +7,10 @@ from .chat import (
     ConversationSummary,
     CreateConversationRequest,
     CreateModuleItemRequest,
+    DocumentActionRequest,
+    DocumentAnalysis,
+    ExamResult,
+    ExamResultRequest,
     Message,
     ModuleItem,
     ProviderPreferences,
@@ -15,7 +19,7 @@ from .chat import (
 
 __all__ = [
     "ChatRequest", "ChatResponse", "Citation", "ConversationDetail",
-    "ConversationSummary", "CreateConversationRequest", "CreateModuleItemRequest",
+    "ConversationSummary", "CreateConversationRequest", "CreateModuleItemRequest", "DocumentActionRequest", "DocumentAnalysis", "ExamResult", "ExamResultRequest",
     "LoginRequest", "Message", "ModuleItem", "ProviderPreferences", "ProviderStatus",
     "RegisterRequest", "SetupRequest", "UserPublic",
 ]

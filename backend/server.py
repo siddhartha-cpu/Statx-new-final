@@ -25,18 +25,18 @@ async def lifespan(app: FastAPI):
     client.close()
 
 
-app = FastAPI(title="Statx AI API", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="StatNex AI API", version="1.0.0", lifespan=lifespan)
 api_router = APIRouter(prefix="/api")
 
 
 @api_router.get("/")
 async def root():
-    return {"service": "statx-ai", "status": "online"}
+    return {"service": "statnex-ai", "status": "online"}
 
 
 @api_router.get("/health")
 async def health():
-    return {"status": "ok", "service": "statx-ai"}
+    return {"status": "ok", "service": "statnex-ai"}
 
 
 @api_router.get("/ready")
@@ -50,7 +50,7 @@ async def ready():
 
 @api_router.get("/dashboard")
 async def dashboard():
-    return {"status": "ready", "product": "Statx AI", "capabilities": ["multi-provider routing", "automatic fallback", "web search citations"]}
+    return {"status": "ready", "product": "StatNex AI", "capabilities": ["document intelligence", "AI chat", "automatic fallback", "web search citations"]}
 
 
 api_router.include_router(auth_router)

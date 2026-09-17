@@ -27,6 +27,8 @@ INDEXES: dict[str, list[IndexModel]] = {
     "provider_preferences": [IndexModel([("user_id", ASCENDING)], name="user_unique", unique=True)],
     "provider_health": [IndexModel([("user_id", ASCENDING), ("provider_id", ASCENDING)], name="user_provider_health", unique=True)],
     "module_items": [IndexModel([("user_id", ASCENDING), ("kind", ASCENDING), ("updated_at", DESCENDING)], name="user_kind_updated")],
+    "document_analyses": [IndexModel([("user_id", ASCENDING), ("document_id", ASCENDING), ("created_at", DESCENDING)], name="user_document_created")],
+    "exam_results": [IndexModel([("user_id", ASCENDING), ("submitted_at", DESCENDING)], name="user_result_created")],
 }
 
 

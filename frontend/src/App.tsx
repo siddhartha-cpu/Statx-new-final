@@ -1,11 +1,11 @@
 import { Navigate, Route, Routes } from "react-router-dom";
-import Assessment from "@/pages/Assessment";
+import Assignments from "@/pages/Assignments";
 import Auth from "@/pages/Auth";
-import Conversations from "@/pages/Conversations";
 import Dashboard from "@/pages/Dashboard";
+import Documents from "@/pages/Documents";
+import History from "@/pages/History";
 import Layout from "@/pages/Layout";
-import ModulePage from "@/pages/ModulePage";
-import Providers from "@/pages/Providers";
+import Results from "@/pages/Results";
 import Settings from "@/pages/Settings";
 import Workspace from "@/pages/Workspace";
 
@@ -17,12 +17,14 @@ export default function App() {
       <Route path="/app" element={<Layout />}>
         <Route index element={<Dashboard />} />
         <Route path="workspace" element={<Workspace />} />
-        <Route path="providers" element={<Providers />} />
-        <Route path="conversations" element={<Conversations />} />
-        <Route path="documents" element={<ModulePage kind="documents" title="Documents" eyebrow="Knowledge layer" description="Keep the references and working material your team returns to." />} />
-        <Route path="competency" element={<ModulePage kind="competency" title="Competency" eyebrow="Signal mapping" description="Track capability themes across your work and conversations." />} />
-        <Route path="results" element={<ModulePage kind="results" title="Results" eyebrow="Outcome review" description="Review the decisions and outputs your AI workspace is producing." />} />
-        <Route path="assessment" element={<Assessment />} />
+        <Route path="providers" element={<Navigate to="/app/workspace" replace />} />
+        <Route path="conversations" element={<Navigate to="/app/workspace" replace />} />
+        <Route path="documents" element={<Documents />} />
+        <Route path="history" element={<History />} />
+        <Route path="competency" element={<Navigate to="/app/history" replace />} />
+        <Route path="results" element={<Results />} />
+        <Route path="assignments" element={<Assignments />} />
+        <Route path="assessment" element={<Navigate to="/app/assignments" replace />} />
         <Route path="settings" element={<Settings />} />
       </Route>
       <Route path="*" element={<Navigate to="/app" replace />} />

@@ -15,6 +15,8 @@ services:
     restart: unless-stopped
     env_file:
       - ./backend/.env
+    volumes:
+      - statx-uploads:/data/uploads
     depends_on:
       mongodb:
         condition: service_healthy
@@ -35,3 +37,4 @@ services:
 
 volumes:
   statx-mongo:
+  statx-uploads:

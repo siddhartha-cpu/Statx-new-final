@@ -7,6 +7,6 @@ def test_web_search_without_credential_is_not_claimed_success(client):
     assert registered.status_code == 200, registered.text
     created = client.post('/conversations', json={'title': 'tscheck-search-thread'})
     assert created.status_code == 200, created.text
-    response = client.post(f"/conversations/{created.json()['id']}/messages", json={'content': 'tscheck current web query', 'provider_ids': ['demo'], 'search_mode': 'web'})
+    response = client.post(f"/conversations/{created.json()['id']}/messages", json={'content': 'tscheck current web query', 'provider_ids': [], 'search_mode': 'web'})
     assert response.status_code == 503, response.text
     assert 'search_unavailable' in response.text

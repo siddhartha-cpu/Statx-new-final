@@ -1,7 +1,10 @@
+import asyncio
+import json
 import uuid
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, HTTPException, Request
+from fastapi.responses import StreamingResponse
 
 from lib.db import db
 from lib.providers import ProviderError, route_with_fallback
@@ -67,17 +70,36 @@ async def send_message(conversation_id: str, payload: ChatRequest, request: Requ
         except SearchError as exc:
             raise HTTPException(status_code=503, detail={"code": "search_unavailable", "message": str(exc)}) from exc
     try:
-        result, attempts = await route_with_fallback(user_id, prompt_messages, payload.provider_ids)
+        result, attempts = await route_with_fallback(user_id, prompt_messages, payload.provider_ids, conversation_id)
     except ProviderError as exc:
         raise HTTPException(status_code=503, detail={"code": "providers_unavailable", "message": exc.message}) from exc
     assistant_now = datetime.now(timezone.utc)
     fallback_notice = None
     if len(attempts) > 1:
-        fallback_notice = f"{attempts[0].title()} unavailable — switched to {result.provider_id.title()}."
-    assistant = {"id": str(uuid.uuid4()), "conversation_id": conversation_id, "role": "assistant", "content": result.text, "created_at": assistant_now, "provider_id": result.provider_id, "citations": [x.model_dump() for x in citations], "fallback_notice": fallback_notice}
+        fallback_notice = "StatNex AI used a secondary authorized route after a temporary issue."
+    public_provider_id = "statx-engine"
+    assistant = {"id": str(uuid.uuid4()), "conversation_id": conversation_id, "role": "assistant", "content": result.text, "created_at": assistant_now, "provider_id": public_provider_id, "citations": [x.model_dump() for x in citations], "fallback_notice": fallback_notice}
     await db.messages.insert_one(assistant)
     title = conversation["title"]
     if title == "New conversation":
         title = payload.content[:48].strip() + ("…" if len(payload.content) > 48 else "")
-    await db.conversations.update_one({"id": conversation_id}, {"$set": {"title": title, "updated_at": assistant_now, "message_count": len(previous) + 1, "provider_id": result.provider_id}})
-    return ChatResponse(message=Message(id=assistant["id"], role="assistant", content=assistant["content"], created_at=assistant_now, provider_id=result.provider_id, citations=citations, fallback_notice=fallback_notice), search_used=use_search, search_status=search_status, provider_attempts=attempts)
+    await db.conversations.update_one({"id": conversation_id}, {"$set": {"title": title, "updated_at": assistant_now, "message_count": len(previous) + 1, "provider_id": public_provider_id}})
+    return ChatResponse(message=Message(id=assistant["id"], role="assistant", content=assistant["content"], created_at=assistant_now, provider_id=public_provider_id, citations=citations, fallback_notice=fallback_notice), search_used=use_search, search_status=search_status, provider_attempts=[public_provider_id])
+
+
+@router.post("/{conversation_id}/messages/stream")
+async def stream_message(conversation_id: str, payload: ChatRequest, request: Request):
+    # The provider result is completed (and fallback resolved) before bytes are emitted.
+    # This prevents a second provider from corrupting partially streamed output.
+    response = await send_message(conversation_id, payload, request)
+
+    async def events():
+        yield "event: status\ndata: {\"status\":\"ready\"}\n\n"
+        text = response.message.content
+        for start in range(0, len(text), 48):
+            chunk = text[start:start + 48]
+            yield f"event: delta\ndata: {json.dumps({'content': chunk})}\n\n"
+            await asyncio.sleep(0.015)
+        yield f"event: complete\ndata: {json.dumps(response.model_dump(mode='json'))}\n\n"
+
+    return StreamingResponse(events(), media_type="text/event-stream", headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})

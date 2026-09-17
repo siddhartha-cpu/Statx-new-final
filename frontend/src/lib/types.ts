@@ -68,4 +68,29 @@ export interface ModuleItem {
   description: string;
   status: string;
   updated_at: string;
+  file_name?: string | null;
+  file_type?: string | null;
+  file_size?: number | null;
+}
+
+export interface DocumentAnalysis {
+  id: string;
+  document_id: string;
+  action: "summary" | "notes" | "flashcards" | "mcqs" | "descriptive" | "assignment" | "ask";
+  content: string;
+  created_at: string;
+  prompt?: string | null;
+  marks?: number | null;
+}
+
+export interface ExamResult {
+  id: string;
+  document_id: string;
+  document_title: string;
+  analysis_id: string;
+  kind: string;
+  correct: number;
+  total: number;
+  percentage: number;
+  submitted_at: string;
 }

@@ -9,7 +9,9 @@ export class ApiError extends Error {
   body: unknown;
 
   constructor(status: number, body: unknown) {
-    super(`request failed with ${status}`);
+    const detail = body && typeof body === "object" && "detail" in body ? (body as { detail?: unknown }).detail : undefined;
+    const message = typeof detail === "string" ? detail : detail && typeof detail === "object" && "message" in detail ? String((detail as { message?: unknown }).message) : `Request failed with ${status}`;
+    super(message);
     this.name = "ApiError";
     this.status = status;
     this.body = body;
@@ -45,3 +47,43 @@ export const apiPut = <T>(path: string, body?: JsonBody) => request<T>("PUT", pa
 export const apiPatch = <T>(path: string, body?: JsonBody) =>
   request<T>("PATCH", path, body);
 export const apiDelete = <T>(path: string) => request<T>("DELETE", path);
+
+export async function apiPostForm<T>(path: string, form: FormData): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, { method: "POST", credentials: "include", body: form });
+  if (!res.ok) {
+    const errBody = await res.json().catch(() => null);
+    throw new ApiError(res.status, errBody);
+  }
+  return (await res.json()) as T;
+}
+
+export async function apiPostStream<T>(path: string, body: unknown, onDelta: (content: string) => void): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, { method: "POST", credentials: "include", headers: { "Content-Type": "application/json", "Accept": "text/event-stream" }, body: JSON.stringify(body) });
+  if (!res.ok) {
+    const errBody = await res.json().catch(() => null);
+    throw new ApiError(res.status, errBody);
+  }
+  if (!res.body) throw new ApiError(502, { detail: "The AI Engine returned an empty stream" });
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let completed: T | undefined;
+  while (true) {
+    const { done, value } = await reader.read();
+    buffer += decoder.decode(value, { stream: !done });
+    const blocks = buffer.split("\n\n");
+    buffer = blocks.pop() ?? "";
+    for (const block of blocks) {
+      const lines = block.split("\n");
+      const event = lines.find((line) => line.startsWith("event:"))?.slice(6).trim();
+      const raw = lines.find((line) => line.startsWith("data:"))?.slice(5).trim();
+      if (!raw) continue;
+      const data = JSON.parse(raw) as { content?: string } | T;
+      if (event === "delta" && "content" in (data as { content?: string })) onDelta((data as { content: string }).content);
+      if (event === "complete") completed = data as T;
+    }
+    if (done) break;
+  }
+  if (!completed) throw new ApiError(502, { detail: "The AI Engine stream ended before completion" });
+  return completed;
+}

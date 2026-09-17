@@ -8,15 +8,20 @@ def account(client):
     return response.json()
 
 
-def test_provider_selection_is_separate_from_connection(client):
+def test_provider_status_is_neutral_and_server_only(client):
     account(client)
     providers = client.get('/providers')
     assert providers.status_code == 200, providers.text
     rows = providers.json()
-    assert any(row['id'] == 'gemini' and row['status'] != 'connected' for row in rows)
-    updated = client.patch('/providers/preferences', json={'provider_ids': ['openai'], 'fallback_enabled': True})
+    # Only the neutral StatNex AI service is exposed to the browser - no vendor key fields.
+    assert len(rows) == 1, rows
+    engine = rows[0]
+    assert engine['id'] == 'statx-engine'
+    assert engine['configured'] is True
+    assert 'api_key' not in engine and 'token' not in engine
+    updated = client.patch('/providers/preferences', json={'provider_ids': ['statx-engine'], 'fallback_enabled': True})
     assert updated.status_code == 200, updated.text
-    assert updated.json()['provider_ids'] == ['openai']
+    assert updated.json()['provider_ids'] == ['statx-engine']
     gemini = client.get('/providers/gemini/connect')
     assert gemini.status_code == 503, gemini.text
     assert 'not configured' in gemini.text.lower()

@@ -79,8 +79,45 @@ class ModuleItem(BaseModel):
     description: str = ""
     status: str = "active"
     updated_at: datetime
+    file_name: str | None = None
+    file_type: str | None = None
+    file_size: int | None = None
 
 
 class CreateModuleItemRequest(BaseModel):
     title: str = Field(min_length=1, max_length=120)
     description: str = Field(default="", max_length=1000)
+
+
+class DocumentActionRequest(BaseModel):
+    action: Literal["summary", "notes", "flashcards", "mcqs", "descriptive", "assignment", "ask"]
+    prompt: str = Field(default="", max_length=4000)
+    marks: Literal[2, 5, 10] | None = None
+
+
+class DocumentAnalysis(BaseModel):
+    id: str
+    document_id: str
+    action: str
+    content: str
+    created_at: datetime
+    prompt: str | None = None
+    marks: int | None = None
+
+
+class ExamResultRequest(BaseModel):
+    analysis_id: str
+    correct: int = Field(ge=0)
+    total: int = Field(ge=1)
+
+
+class ExamResult(BaseModel):
+    id: str
+    document_id: str
+    document_title: str
+    analysis_id: str
+    kind: str
+    correct: int
+    total: int
+    percentage: int
+    submitted_at: datetime
